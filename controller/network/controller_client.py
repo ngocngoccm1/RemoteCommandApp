@@ -1,24 +1,40 @@
 import socket
+import json
 
 def connect_to_agent(agent_ip="127.0.0.1", agent_port=8000):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((agent_ip, agent_port))
-    print(f"[CLIENT] Da ket noi toi Agent {agent_ip}:{agent_port}")
+    print(f"[CLIENT] Đã kết nối tới Agent {agent_ip}:{agent_port}")
 
     try:
         while True:
-            cmd = input("Nhap lenh ('exit' de thoat): ")
+            cmd = input("Nhập lệnh ('exit' để thoát): ")
             s.sendall(cmd.encode("utf-8"))
             if cmd.lower() == "exit":
                 break
-            data = s.recv(4096)
-            print("[KET QUA TU AGENT]:")
-            print(data.decode("utf-8"))
+
+            data = s.recv(8192).decode("utf-8").strip()
+            if not data:
+                continue
+
+            try:
+                result = json.loads(data)
+                print("\n=== KẾT QUẢ THỰC THI ===")
+                print(f"📜 Lệnh: {result['command']}")
+                print(f"✅ Exit code: {result['exit_code']}")
+                if result["stdout"]:
+                    print(f"\n--- STDOUT ---\n{result['stdout']}")
+                if result["stderr"]:
+                    print(f"\n--- STDERR ---\n{result['stderr']}")
+                print("=========================\n")
+            except json.JSONDecodeError:
+                print("[Lỗi] Không đọc được dữ liệu JSON:", data)
+
     except Exception as e:
-        print("Loi:", e)
+        print("Lỗi:", e)
     finally:
         s.close()
-        print("[CLIENT] Ngat ket noi.")
+        print("[CLIENT] Ngắt kết nối.")
 
 if __name__ == "__main__":
     connect_to_agent()

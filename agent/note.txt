@@ -1,0 +1,9 @@
+run :  
+Máy A
+cd d:\nhtn\py\connec_App\RemoteCLI_App
+python -m agent.network.agent_server
+Máy B
+cd d:\nhtn\py\connec_App\RemoteCLI_App
+python controller/network/controller_client.py
+
+
